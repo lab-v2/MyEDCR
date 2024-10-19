@@ -45,6 +45,24 @@ def NEG(conditions: List[Condition], data: List[Dict], predictions: List[int], l
     
     return count
 
+def BOD(conditions: List[Condition], data: List[Dict], predictions: List[int], label: List[int]) -> int:
+    """
+    Counts the number of examples in T that satisfy any of the conditions in DCy and were predicted as y in Y T
+    """
+    count = 0
+
+    for index in range(len(data)):
+        current_data = data[index]
+        current_pred = predictions[index]
+        # current_label = label[index]
+
+        at_least_one_condition_is_met = any([condition(current_data) for condition in conditions])
+        prediction_has_value_of_1 = current_pred == 1
+
+        if at_least_one_condition_is_met and prediction_has_value_of_1: count += 1
+
+    return count
+
 def calculate_P(predictions: List[int], label: List[int]) -> float:
     """
     Calculates the precision of all rows where the label is predicted as True.
@@ -55,6 +73,20 @@ def calculate_P(predictions: List[int], label: List[int]) -> float:
 
     return precision_score(label, predictions)
 
+
+def calculate_false_positives(predictions: List[int], label: List[int]) -> float:
+    """
+    Calculates the number of false positives in the data.
+    """
+    predictions = [predictions[index] for index in range(len(predictions)) if label[index] == 1]
+    label = [label[index] for index in range(len(label)) if label[index] == 1]
+
+    count = 0
+    for index in range(len(predictions)):
+        if predictions[index] == 1 and label[index] == 0:
+            count += 1
+    return count
+
 def calculate_R(predictions: List[int], label: List[int]) -> float:
     """
     Calculates the recall of all rows where the label is predicted as True.
@@ -64,9 +96,6 @@ def calculate_R(predictions: List[int], label: List[int]) -> float:
     label = [label[index] for index in range(len(label)) if label[index] == 1]
 
     return recall_score(label, predictions)
-
-def RatioDetRuleLearn(conditions: List[Condition], data, predictions: List[int], labels: List[int]) -> List[Condition]: 
-    pass 
 
 def DetRuleLearn(conditions: List[Condition], data, predictions: List[int], labels: List[int], epsilon=0.1) -> List[Condition]: 
     """
@@ -81,19 +110,52 @@ def DetRuleLearn(conditions: List[Condition], data, predictions: List[int], labe
     threshold = epsilon * (N * P) / R
 
     learned_conditions = [] 
-    DC_star = list(filter(lambda condition: NEG([condition], data, predictions, labels) < threshold, conditions)) 
-    while len(DC_star) > 0: 
-        c_best = max(DC_star, key=lambda condition: POS(learned_conditions + [condition], data, predictions, labels))
-        learned_conditions.append(c_best)
-        DC_star.remove(c_best)
-        DC_star = list(filter(lambda condition: NEG(learned_conditions + [condition], data, predictions, labels) < threshold, DC_star))
+    candidate_conditions = list(filter(lambda condition: NEG([condition], data, predictions, labels) < threshold, conditions)) 
+    while len(candidate_conditions) > 0: 
+        best_condition = max(candidate_conditions, key=lambda condition: POS(learned_conditions + [condition], data, predictions, labels))
+        learned_conditions.append(best_condition)
+        candidate_conditions.remove(best_condition)
+        candidate_conditions = list(filter(lambda condition: NEG(learned_conditions + [condition], data, predictions, labels) < threshold, candidate_conditions))
     return learned_conditions
+
+def RatioDetRuleLearn(conditions: List[Condition], data, predictions: List[int], labels: List[int]) -> List[Condition]: 
+    """
+    This is an implementation of the RatioDetRuleLearn algorithm from the EDCR paper.
+    Refer to Algorithm 2 in the README for more information.
+    """
+    learned_conditions = []
+    list_of_candidate_learned_conditions = [] # Will contain a list of lists with candidate conditions within them.
+    candidate_conditions = conditions.copy()
+    index = 0
+
+    while len(candidate_conditions) > 0:
+        best_condition = min(candidate_conditions, key=lambda condition: (
+            (BOD(learned_conditions + [condition], data, predictions, labels) - BOD(learned_conditions, data, predictions, labels)) / 
+            (POS(learned_conditions + [condition], data, predictions, labels) - POS(learned_conditions, data, predictions, labels))
+        ))
+        learned_conditions.append(best_condition)
+        list_of_candidate_learned_conditions.append(learned_conditions)
+
+        candidate_conditions.remove(best_condition)
+        candidate_conditions = list(filter(lambda condition: POS(learned_conditions + [condition], data, predictions, labels) > POS(learned_conditions, data, predictions, labels), candidate_conditions))
+
+        index += 1
+
+    best_learned_conditions = min(list_of_candidate_learned_conditions, key=lambda conditions: (BOD(conditions, data, predictions, labels) + calculate_false_positives(predictions, labels)) / (POS(conditions, data, predictions, labels)))
+    return best_learned_conditions
 
 # ==================================================================================================
 # EDCR Error detectors.
 # ==================================================================================================
 class EdcrErrorDetector:
     def detect(self, data: List[Dict], pred: List[int]) -> List[int]:
+        """
+        This function detects errors in the data.
+
+        Args:
+        data: List[Dict]: The data.
+        pred: List[int]: The predictions of the model.
+        """
         return [any([condition(d) for condition in self.rules]) for d in data]
 
 class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
@@ -102,6 +164,15 @@ class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
         self.epsilon = epsilon
 
     def train(self, data: List[Dict], pred: List[int], labels: List[int], conditions: List[Condition]):
+        """
+        This function trains the error detector.
+
+        Args:
+        data: List[Dict]: The data.
+        pred: List[int]: The predictions of the model.
+        labels: List[int]: The labels of the data.
+        conditions: List[Condition]: The conditions to use.
+        """
         self.rules = DetRuleLearn(
             conditions=conditions, 
             data=data, 
@@ -115,6 +186,15 @@ class EdcrDetRatioLearnErrorDetector(EdcrErrorDetector):
         self.rules = []
 
     def train(self, data: List[Dict], pred: List[int], labels: List[int], conditions: List[Condition]):
+        """
+        This function trains the error detector.
+
+        Args:
+        data: List[Dict]: The data.
+        pred: List[int]: The predictions of the model.
+        labels: List[int]: The labels of the data.
+        conditions: List[Condition]: The conditions to use.
+        """
         self.rules = RatioDetRuleLearn(
             conditions=conditions, 
             data=data, 

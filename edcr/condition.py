@@ -1,6 +1,6 @@
 class Condition:
     """
-    A class for conditions. Conditions represent rules that can be applied to a dataset. Should return 0 or 1    
+    A class for conditions. Conditions represent rules that can be applied to a dataset. Should return True of False    
     """
     def __init__(self, name, func):
         self.name = name

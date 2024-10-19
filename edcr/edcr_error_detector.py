@@ -13,7 +13,7 @@ def POS(conditions: List[Condition], data: List[Dict], predictions: List[int], l
         current_pred = predictions[index]
         current_label = label[index]
 
-        at_least_one_condition_is_met = any([condition(current_data, current_pred) for condition in conditions])
+        at_least_one_condition_is_met = any([condition(current_data) for condition in conditions])
         prediction_is_wrong = current_pred != current_label
 
         if at_least_one_condition_is_met and prediction_is_wrong: count += 1
@@ -37,7 +37,7 @@ def NEG(conditions: List[Condition], data: List[Dict], predictions: List[int], l
         current_pred = predictions[index]
         current_label = label[index]
 
-        at_least_one_condition_is_met = any([condition(current_data, current_pred) for condition in conditions])
+        at_least_one_condition_is_met = any([condition(current_data) for condition in conditions])
         prediction_is_correct = current_pred == current_label
 
         if at_least_one_condition_is_met and prediction_is_correct: count += 1
@@ -54,7 +54,7 @@ def BOD(conditions: List[Condition], data: List[Dict], predictions: List[int], l
         current_pred = predictions[index]
         # current_label = label[index]
 
-        at_least_one_condition_is_met = any([condition(current_data, current_pred) for condition in conditions])
+        at_least_one_condition_is_met = any([condition(current_data) for condition in conditions])
         prediction_has_value_of_1 = current_pred == 1
 
         if at_least_one_condition_is_met and prediction_has_value_of_1: count += 1
@@ -157,7 +157,7 @@ class EdcrErrorDetector:
         data: List[Dict]: The data.
         pred: List[int]: The predictions of the model.
         """
-        return [any([condition(data[index], pred[index]) for condition in self.rules]) for index in range(len(data))]
+        return [any([condition(data[index]) for condition in self.rules]) for index in range(len(data))]
 
 class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
     def __init__(self, epsilon=0.1):

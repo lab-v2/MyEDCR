@@ -13,7 +13,7 @@ def POS(conditions: List[Condition], data: List[Dict], predictions: List[int], l
         current_pred = predictions[index]
         current_label = label[index]
 
-        at_least_one_condition_is_met = any([condition(current_data) for condition in conditions])
+        at_least_one_condition_is_met = any([condition(current_data, current_pred) for condition in conditions])
         prediction_is_wrong = current_pred != current_label
 
         if at_least_one_condition_is_met and prediction_is_wrong: count += 1
@@ -37,7 +37,7 @@ def NEG(conditions: List[Condition], data: List[Dict], predictions: List[int], l
         current_pred = predictions[index]
         current_label = label[index]
 
-        at_least_one_condition_is_met = any([condition(current_data) for condition in conditions])
+        at_least_one_condition_is_met = any([condition(current_data, current_pred) for condition in conditions])
         prediction_is_correct = current_pred == current_label
 
         if at_least_one_condition_is_met and prediction_is_correct: count += 1
@@ -54,7 +54,7 @@ def BOD(conditions: List[Condition], data: List[Dict], predictions: List[int], l
         current_pred = predictions[index]
         # current_label = label[index]
 
-        at_least_one_condition_is_met = any([condition(current_data) for condition in conditions])
+        at_least_one_condition_is_met = any([condition(current_data, current_pred) for condition in conditions])
         prediction_has_value_of_1 = current_pred == 1
 
         if at_least_one_condition_is_met and prediction_has_value_of_1: count += 1
@@ -110,13 +110,10 @@ def DetRuleLearn(conditions: List[Condition], data, predictions: List[int], labe
     learned_conditions = [] 
     candidate_conditions = list(filter(lambda condition: NEG([condition], data, predictions, labels) < threshold, conditions)) 
 
-    print("Initial candidate conditions:")
     for condition in candidate_conditions: print(condition, end=" ")
 
     while len(candidate_conditions) > 0: 
         best_condition = max(candidate_conditions, key=lambda condition: POS(learned_conditions.copy() + [condition], data, predictions, labels))
-        print(best_condition)
-
         learned_conditions.append(best_condition)
         candidate_conditions.remove(best_condition)
         candidate_conditions = list(filter(lambda condition: NEG(learned_conditions + [condition], data, predictions, labels) < threshold, candidate_conditions))

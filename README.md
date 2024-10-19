@@ -1,4 +1,4 @@
-# EDCR implementation
+# EDCR
 
 ## Algorithms
 ### Algorithm 1: DetRuleLearn:

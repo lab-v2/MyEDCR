@@ -65,11 +65,13 @@ def calculate_R(predictions: List[int], label: List[int]) -> float:
 
     return recall_score(label, predictions)
 
-def RatioDetRuleLearn(conditions: List[Condition], data, predictions: List[int], labels: List[int]): pass
+def RatioDetRuleLearn(conditions: List[Condition], data, predictions: List[int], labels: List[int]) -> List[Condition]: 
+    pass 
 
 def DetRuleLearn(conditions: List[Condition], data, predictions: List[int], labels: List[int], epsilon=0.1) -> List[Condition]: 
     """
-    Refer to Algorithm 1.1 in the README for more information.
+    This is an implementation of the DetRuleLearn algorithm from the EDCR paper.
+    Refer to Algorithm 1 in the README for more information.
     """
 
     N = labels.count(True)
@@ -109,9 +111,8 @@ class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
         )
     
 class EdcrDetRatioLearnErrorDetector(EdcrErrorDetector):
-    def __init__(self, epsilon=0.1):
+    def __init__(self):
         self.rules = []
-        self.epsilon = epsilon
 
     def train(self, data: List[Dict], pred: List[int], labels: List[int], conditions: List[Condition]):
         self.rules = RatioDetRuleLearn(
@@ -119,5 +120,4 @@ class EdcrDetRatioLearnErrorDetector(EdcrErrorDetector):
             data=data, 
             predictions=pred, 
             labels=labels, 
-            epsilon=self.epsilon
         )

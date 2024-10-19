@@ -6,8 +6,8 @@ class Condition:
         self.name = name
         self.func = func
 
-    def __call__(self, metadata) -> bool: 
-        return self.func(metadata)
+    def __call__(self, metadata, pred) -> bool: 
+        return self.func(metadata, pred)
     
     def __str__(self):
         return self.name

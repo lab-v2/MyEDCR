@@ -8,7 +8,6 @@ def POS(conditions: List[Condition], data: List[Dict], predictions: List[int], l
     This function counts the number of samples where the conditions are met and the model's prediction is an error
     """
     count = 0
-
     for index in range(len(data)):
         current_data = data[index]
         current_pred = predictions[index]
@@ -42,7 +41,6 @@ def NEG(conditions: List[Condition], data: List[Dict], predictions: List[int], l
         prediction_is_correct = current_pred == current_label
 
         if at_least_one_condition_is_met and prediction_is_correct: count += 1
-    
     return count
 
 def BOD(conditions: List[Condition], data: List[Dict], predictions: List[int], label: List[int]) -> int:
@@ -111,8 +109,14 @@ def DetRuleLearn(conditions: List[Condition], data, predictions: List[int], labe
 
     learned_conditions = [] 
     candidate_conditions = list(filter(lambda condition: NEG([condition], data, predictions, labels) < threshold, conditions)) 
+
+    print("Initial candidate conditions:")
+    for condition in candidate_conditions: print(condition, end=" ")
+
     while len(candidate_conditions) > 0: 
-        best_condition = max(candidate_conditions, key=lambda condition: POS(learned_conditions + [condition], data, predictions, labels))
+        best_condition = max(candidate_conditions, key=lambda condition: POS(learned_conditions.copy() + [condition], data, predictions, labels))
+        print(best_condition)
+
         learned_conditions.append(best_condition)
         candidate_conditions.remove(best_condition)
         candidate_conditions = list(filter(lambda condition: NEG(learned_conditions + [condition], data, predictions, labels) < threshold, candidate_conditions))
@@ -181,7 +185,7 @@ class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
             epsilon=self.epsilon
         )
     
-class EdcrDetRatioLearnErrorDetector(EdcrErrorDetector):
+class EdcrRatioDetRuleLearnErrorDetector(EdcrErrorDetector):
     def __init__(self):
         self.rules = []
 

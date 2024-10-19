@@ -1,15 +1,19 @@
 from edcr.condition import Condition
-from edcr.edcr_error_detector import EdcrDetRuleLearnErrorDetector, EdcrDetRatioLearnErrorDetector
+from edcr.edcr_error_detector import EdcrDetRuleLearnErrorDetector, EdcrRatioDetRuleLearnErrorDetector
 
 import pandas as pd
-import random
 
+def make_feature_lambda(feature_name):
+    return lambda x: x[feature_name] == 1
+    
 data = pd.read_csv("data/fake_2.csv")
 feature_columns = [column for column in data.columns if column != "pred" and column != "target"]
-conditions = []
-conditions += [Condition(column, lambda x: x[column] == 1) for column in feature_columns]
+conditions = [
+   Condition(column, make_feature_lambda(f"{column}"))
+   for column in feature_columns
+]
 
-detector = EdcrDetRatioLearnErrorDetector()
+detector = EdcrDetRuleLearnErrorDetector(epsilon=0.35)
 detector.train(
     data=data.to_dict("records"), 
     pred=data["pred"].tolist(), 

@@ -160,7 +160,7 @@ class EdcrErrorDetector:
         data: List[Dict]: The data.
         pred: List[int]: The predictions of the model.
         """
-        return [any([condition(d) for condition in self.rules]) for d in data]
+        return [any([condition(data[index], pred[index]) for condition in self.rules]) for index in range(len(data))]
 
 class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
     def __init__(self, epsilon=0.1):

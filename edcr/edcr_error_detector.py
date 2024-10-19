@@ -65,7 +65,7 @@ def calculate_R(predictions: List[int], label: List[int]) -> float:
 
     return recall_score(label, predictions)
 
-def RatioDetRuleLearn(self, conditions: List[Condition], labels): pass
+def RatioDetRuleLearn(conditions: List[Condition], data, predictions: List[int], labels: List[int]): pass
 
 def DetRuleLearn(conditions: List[Condition], data, predictions: List[int], labels: List[int], epsilon=0.1) -> List[Condition]: 
     """
@@ -87,7 +87,14 @@ def DetRuleLearn(conditions: List[Condition], data, predictions: List[int], labe
         DC_star = list(filter(lambda condition: NEG(learned_conditions + [condition], data, predictions, labels) < threshold, DC_star))
     return learned_conditions
 
-class EdcrDetRuleLearnErrorDetector:
+# ==================================================================================================
+# EDCR Error detectors.
+# ==================================================================================================
+class EdcrErrorDetector:
+    def detect(self, data: List[Dict], pred: List[int]) -> List[int]:
+        return [any([condition(d) for condition in self.rules]) for d in data]
+
+class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
     def __init__(self, epsilon=0.1):
         self.rules = []
         self.epsilon = epsilon
@@ -100,6 +107,17 @@ class EdcrDetRuleLearnErrorDetector:
             labels=labels, 
             epsilon=self.epsilon
         )
+    
+class EdcrDetRatioLearnErrorDetector(EdcrErrorDetector):
+    def __init__(self, epsilon=0.1):
+        self.rules = []
+        self.epsilon = epsilon
 
-    def detect(self, data: List[Dict], pred: List[int]) -> List[int]:
-        return [any([condition(d) for condition in self.rules]) for d in data]
+    def train(self, data: List[Dict], pred: List[int], labels: List[int], conditions: List[Condition]):
+        self.rules = RatioDetRuleLearn(
+            conditions=conditions, 
+            data=data, 
+            predictions=pred, 
+            labels=labels, 
+            epsilon=self.epsilon
+        )

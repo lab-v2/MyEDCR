@@ -13,7 +13,7 @@ conditions = [
    for column in feature_columns
 ]
 
-detector = EdcrDetRuleLearnErrorDetector(epsilon=0.35)
+detector = EdcrRatioDetRuleLearnErrorDetector(epsilon=0.35)
 detector.train(
     data=data.to_dict("records"), 
     pred=data["pred"].tolist(), 

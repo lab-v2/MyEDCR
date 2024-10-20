@@ -20,6 +20,23 @@ def POS(conditions: List[Condition], data: List[Dict], predictions: List[int], l
     
     return count
 
+def POS_T(conditions: List[Condition], data: List[Dict], predictions: List[int], label: List[int]) -> int:
+    """
+    This function counts the number of samples where the conditions are met and the model's prediction are false positives
+    """
+    count = 0
+    for index in range(len(data)):
+        current_data = data[index]
+        current_pred = predictions[index]
+        current_label = label[index]
+
+        at_least_one_condition_is_met = any([condition(current_data) for condition in conditions])
+        is_false_positive = current_pred == 1 and current_label == 0
+
+        if at_least_one_condition_is_met and is_false_positive and current_label == 1: count += 1
+    
+    return count
+
 def NEG(conditions: List[Condition], data: List[Dict], predictions: List[int], label: List[int]) -> int: 
     """
     Counts the samples where the conditions are met, but the prediction was correct.
@@ -132,13 +149,13 @@ def RatioDetRuleLearn(conditions: List[Condition], data, predictions: List[int],
     while len(candidate_conditions) > 0:
         best_condition = min(candidate_conditions, key=lambda condition: (
             (BOD(learned_conditions + [condition], data, predictions, labels) - BOD(learned_conditions, data, predictions, labels)) / 
-            (POS(learned_conditions + [condition], data, predictions, labels) - POS(learned_conditions, data, predictions, labels))
+            (POS_T(learned_conditions + [condition], data, predictions, labels) - POS_T(learned_conditions, data, predictions, labels))
         ))
         learned_conditions.append(best_condition)
         list_of_candidate_learned_conditions.append(learned_conditions)
 
         candidate_conditions.remove(best_condition)
-        candidate_conditions = list(filter(lambda condition: POS(learned_conditions + [condition], data, predictions, labels) > POS(learned_conditions, data, predictions, labels), candidate_conditions))
+        candidate_conditions = list(filter(lambda condition: POS_T(learned_conditions + [condition], data, predictions, labels) > POS_T(learned_conditions, data, predictions, labels), candidate_conditions))
 
         index += 1
 

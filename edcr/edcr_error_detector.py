@@ -118,7 +118,7 @@ def DetRuleLearn(conditions: List[Condition], data, predictions: List[int], labe
     Refer to Algorithm 1 in the README for more information.
     """
 
-    N = labels.count(True)
+    N = labels.count(1)
     P = calculate_P(predictions, labels)
     R = calculate_R(predictions, labels)
 

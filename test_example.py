@@ -6,14 +6,14 @@ import pandas as pd
 def make_feature_lambda(feature_name):
     return lambda x: x[feature_name] == 1
     
-data = pd.read_csv("data/fake_2.csv")
+data = pd.read_csv("data/fake_5.csv")
 feature_columns = [column for column in data.columns if column != "pred" and column != "target"]
 conditions = [
    Condition(column, make_feature_lambda(f"{column}"))
    for column in feature_columns
 ]
 
-detector = EdcrRatioDetRuleLearnErrorDetector(epsilon=0.35)
+detector = EdcrRatioDetRuleLearnErrorDetector()
 detector.train(
     data=data.to_dict("records"), 
     pred=data["pred"].tolist(), 

@@ -149,7 +149,7 @@ def RatioDetRuleLearn(conditions: List[Condition], data, predictions: List[int],
     while len(candidate_conditions) > 0:
         best_condition = min(candidate_conditions, key=lambda condition: (
             (BOD(learned_conditions + [condition], data, predictions, labels) - BOD(learned_conditions, data, predictions, labels)) / 
-            (POS_T(learned_conditions + [condition], data, predictions, labels) - POS_T(learned_conditions, data, predictions, labels) + 1)
+            (POS_T(learned_conditions + [condition], data, predictions, labels) - POS_T(learned_conditions, data, predictions, labels))
         ))
         learned_conditions.append(best_condition)
         list_of_candidate_learned_conditions.append(learned_conditions)
@@ -159,7 +159,7 @@ def RatioDetRuleLearn(conditions: List[Condition], data, predictions: List[int],
 
         index += 1
 
-    best_learned_conditions = min(list_of_candidate_learned_conditions, key=lambda cd: (BOD(cd, data, predictions, labels) + calculate_false_positives(predictions, labels)) / (POS_T(cd, data, predictions, labels) + 1))
+    best_learned_conditions = min(list_of_candidate_learned_conditions, key=lambda cd: (BOD(cd, data, predictions, labels) + calculate_false_positives(predictions, labels)) / (POS_T(cd, data, predictions, labels)))
     return best_learned_conditions
 
 # ==================================================================================================
@@ -169,6 +169,17 @@ class EdcrErrorDetector:
     def detect(self, data: List[Dict], pred: List[int]) -> List[int]:
         """
         This function detects errors in the data.
+
+        Args:
+        data: List[Dict]: The data.
+        pred: List[int]: The predictions of the model.
+        """
+        return [any([condition(data[index]) for condition in self.rules]) for index in range(len(data))]
+
+class EdcrErrorCorrector:
+    def correct(self, data: List[Dict], pred: List[int]) -> List[int]:
+        """
+        This function corrects errors in the data.
 
         Args:
         data: List[Dict]: The data.
@@ -219,3 +230,5 @@ class EdcrRatioDetRuleLearnErrorDetector(EdcrErrorDetector):
             predictions=pred, 
             labels=labels, 
         )
+
+class EdcrDetRuleLearnErrorCorrector

@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from edcr.condition import Condition, ConditionLabelPair
+from edcr.condition import Condition
 from sklearn.metrics import precision_score, recall_score
 
 
@@ -118,34 +118,15 @@ def BOD(
 
     return count
 
-
-def POS_CC(
-    conditions_label_pairs: List[ConditionLabelPair],
-    data: List[Dict],
-    predictions: List[int],
-    label: List[int],
-):
-    pass
-
-
-def BOD_CC(
-    conditions_label_pairs: List[ConditionLabelPair],
-    data: List[Dict],
-    predictions: List[int],
-    label: List[int],
-):
-    pass
-
-
 def calculate_P(predictions: List[int], label: List[int], expected_label=1) -> float:
     """
     Calculates the precision of all rows where the label is predicted as True.
     This is a value that is calculated in the EDCR paper.
     """
-    predictions = [
-        predictions[index] for index in range(len(predictions)) if label[index] == 1
-    ]
-    label = [label[index] for index in range(len(label)) if label[index] == 1]
+    # predictions = [
+    #     predictions[index] for index in range(len(predictions)) if label[index] == 1
+    # ]
+    # label = [label[index] for index in range(len(label)) if label[index] == 1]
 
     return precision_score(label, predictions)
 
@@ -154,10 +135,10 @@ def calculate_false_positives(predictions: List[int], label: List[int]) -> float
     """
     Calculates the number of false positives in the data.
     """
-    predictions = [
-        predictions[index] for index in range(len(predictions)) if label[index] == 1
-    ]
-    label = [label[index] for index in range(len(label)) if label[index] == 1]
+    # predictions = [
+    #     predictions[index] for index in range(len(predictions)) if label[index] == 1
+    # ]
+    # label = [label[index] for index in range(len(label)) if label[index] == 1]
 
     count = 0
     for index in range(len(predictions)):
@@ -171,10 +152,10 @@ def calculate_R(predictions: List[int], label: List[int]) -> float:
     Calculates the recall of all rows where the label is predicted as True.
     This is a value that is calculated in the EDCR paper.
     """
-    predictions = [
-        predictions[index] for index in range(len(predictions)) if label[index] == 1
-    ]
-    label = [label[index] for index in range(len(label)) if label[index] == 1]
+    # predictions = [
+    #     predictions[index] for index in range(len(predictions)) if label[index] == 1
+    # ]
+    # label = [label[index] for index in range(len(label)) if label[index] == 1]
 
     return recall_score(label, predictions)
 
@@ -204,9 +185,6 @@ def DetRuleLearn(
             conditions,
         )
     )
-
-    for condition in candidate_conditions:
-        print(condition, end=" ")
 
     while len(candidate_conditions) > 0:
         best_condition = max(
@@ -299,7 +277,7 @@ class EdcrErrorDetector:
         pred: List[int]: The predictions of the model.
         """
         return [
-            any([condition(data[index]) for condition in self.rules])
+            any([condition(data[index], pred[index]) for condition in self.rules])
             for index in range(len(data))
         ]
 

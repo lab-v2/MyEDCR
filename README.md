@@ -15,6 +15,7 @@ For example:
 Condition("X is equal to 1", lambda x, pred: x == 1)
 ```
 
+
 ### Step 2
 After creating a list of conditions:
 ```python

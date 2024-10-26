@@ -2,7 +2,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from edcr.condition import Condition
-from edcr.edcr_error_detector import EdcrDetRuleLearnErrorDetector, EdcrRatioDetRuleLearnErrorDetector
+from edcr.error_detector import EdcrDetRuleLearnErrorDetector
 
 import pandas as pd
 
@@ -14,11 +14,14 @@ error_detector.train(
     pred = data["pred"].to_list(),
     labels = data["target"].to_list(),
     conditions= [
-        Condition("Feature 0 is equal 1", lambda metadata, prediction: metadata["feature_0"] == 1),
-        Condition("Feature 1 is equal 1", lambda metadata, prediction: metadata["feature_1"] == 1),
+        Condition("Feature 0 is equal 1", lambda metadata, prediction: metadata["feature_0"] == 0),
+        Condition("Feature 1 is equal 1", lambda metadata, prediction: metadata["feature_1"] == 0),
         Condition("Feature 2 is equal 1", lambda metadata, prediction: metadata["feature_2"] == 1),
     ]
 )
+
+for rule in error_detector.rules[1]:
+    print(rule)
 
 error_detector.detect(
     data = [
@@ -28,6 +31,3 @@ error_detector.detect(
     ],
     pred = [1, 0, 1],
 )
-
-for rule in error_detector.rules:
-    print(rule)

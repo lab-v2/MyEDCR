@@ -13,6 +13,12 @@ def POS(
 ) -> int:
     """
     This function counts the number of samples where the conditions are met and the model's prediction is an error
+
+    :param conditions: List[Condition]: A list of conditions.
+    :param data: List[Dict]: The data.
+    :param predictions: List[int]: The predictions of the model.
+    :param label: List[int]: The labels of the data.
+    :param expected_label: int: The expected label.
     """
     count = 0
     for index in range(len(data)):
@@ -40,6 +46,12 @@ def POS_T(
 ) -> int:
     """
     This function counts the number of samples where the conditions are met and the model's prediction are false positives
+
+    :param conditions: List[Condition]: A list of conditions.
+    :param data: List[Dict]: The data.
+    :param predictions: List[int]: The predictions of the model.
+    :param label: List[int]: The labels of the data.
+    :param expected_label: int: The expected label.
     """
     count = 0
     for index in range(len(data)):
@@ -68,11 +80,11 @@ def NEG(
     """
     Counts the samples where the conditions are met, but the prediction was correct.
 
-    Args:
-    conditions: List[Condition]: A list of conditions.
-    data: List[Dict]: The data.
-    pred: List[int]: The predictions of the model.
-    label: List[int]: The labels of the data.
+    :param conditions: List[Condition]: A list of conditions.
+    :param data: List[Dict]: The data.
+    :param predictions: List[int]: The predictions of the model.
+    :param label: List[int]: The labels of the data.
+    :param expected_label: int: The expected label.
     """
     count = 0
 
@@ -99,7 +111,13 @@ def BOD(
     expected_label=1,
 ) -> int:
     """
-    Counts the number of examples in T that satisfy any of the conditions in DCy and were predicted as y in Y T
+    Counts the number of examples in T that satisfy any of the conditions in DCy and were predicted as y in Y
+
+    :param conditions: List[Condition]: A list of conditions.
+    :param data: List[Dict]: The data.
+    :param predictions: List[int]: The predictions of the model.
+    :param label: List[int]: The labels of the data.
+    :param expected_label: int: The expected label.
     """
     count = 0
 
@@ -122,6 +140,10 @@ def calculate_P(predictions: List[int], label: List[int], expected_label=1) -> f
     """
     Calculates the precision of all rows where the label is predicted as True.
     This is a value that is calculated in the EDCR paper.
+
+    :param predictions: List[int]: The predictions of the model.
+    :param label: List[int]: The labels of the data.
+    :param expected_label: int: The expected label.
     """
     # predictions = [
     #     predictions[index] for index in range(len(predictions)) if label[index] == 1
@@ -134,6 +156,9 @@ def calculate_P(predictions: List[int], label: List[int], expected_label=1) -> f
 def calculate_false_positives(predictions: List[int], label: List[int]) -> float:
     """
     Calculates the number of false positives in the data.
+
+    :param predictions: List[int]: The predictions of the model.
+    :param label: List[int]: The labels of the data.
     """
     # predictions = [
     #     predictions[index] for index in range(len(predictions)) if label[index] == 1
@@ -151,12 +176,10 @@ def calculate_R(predictions: List[int], label: List[int]) -> float:
     """
     Calculates the recall of all rows where the label is predicted as True.
     This is a value that is calculated in the EDCR paper.
-    """
-    # predictions = [
-    #     predictions[index] for index in range(len(predictions)) if label[index] == 1
-    # ]
-    # label = [label[index] for index in range(len(label)) if label[index] == 1]
 
+    :param predictions: List[int]: The predictions of the model.
+    :param label: List[int]: The labels of the data.
+    """
     return recall_score(label, predictions)
 
 
@@ -170,6 +193,12 @@ def DetRuleLearn(
     """
     This is an implementation of the DetRuleLearn algorithm from the EDCR paper.
     Refer to Algorithm 1 in the README for more information.
+
+    :param conditions: List[Condition]: A list of conditions.
+    :param data: List[Dict]: The data.
+    :param predictions: List[int]: The predictions of the model.
+    :param labels: List[int]: The labels of the data.
+    :param epsilon: float: The epsilon value used as a constraint while selecting rules.
     """
 
     N = labels.count(1)
@@ -179,31 +208,13 @@ def DetRuleLearn(
     threshold = epsilon * (N * P) / R
 
     learned_conditions = []
-    candidate_conditions = list(
-        filter(
-            lambda condition: NEG([condition], data, predictions, labels) < threshold,
-            conditions,
-        )
-    )
+    candidate_conditions = list(filter(lambda condition: NEG([condition], data, predictions, labels) < threshold, conditions))
 
     while len(candidate_conditions) > 0:
-        best_condition = max(
-            candidate_conditions,
-            key=lambda condition: POS(
-                learned_conditions.copy() + [condition], data, predictions, labels
-            ),
-        )
+        best_condition = max( candidate_conditions, key=lambda condition: POS(learned_conditions.copy() + [condition], data, predictions, labels))
         learned_conditions.append(best_condition)
         candidate_conditions.remove(best_condition)
-        candidate_conditions = list(
-            filter(
-                lambda condition: NEG(
-                    learned_conditions + [condition], data, predictions, labels
-                )
-                < threshold,
-                candidate_conditions,
-            )
-        )
+        candidate_conditions = list(filter(lambda condition: NEG(learned_conditions + [condition], data, predictions, labels) < threshold, candidate_conditions))
     return learned_conditions
 
 def RatioDetRuleLearn(

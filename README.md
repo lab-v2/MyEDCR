@@ -82,6 +82,15 @@ error_detections = detector.detect(
         pred=[0, 1, 0], 
     )
 ```
+
+### Step 4
+If you're curious about the rules that were learned by EDCR, you can check the rules like so:
+```python
+for rule in detector.rules:
+    print(rule)
+```
+If you passed in proper names for your conditions, you should be able to see what conditions were selected. 
+
 ## Algorithms
 ### Algorithm 1: DetRuleLearn:
 Given a target class i, a recall reduction threshold value epsilon and a set of conditions C. A subset of conditions in C named DC_i is returned  

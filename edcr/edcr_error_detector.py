@@ -9,7 +9,7 @@ def POS(
     data: List[Dict],
     predictions: List[int],
     label: List[int],
-    expected_label=1,
+    target_class,
 ) -> int:
     """
     This function counts the number of samples where the conditions are met and the model's prediction is an error
@@ -23,8 +23,8 @@ def POS(
     count = 0
     for index in range(len(data)):
         current_data = data[index]
-        current_pred = 1 if predictions[index] == expected_label else 0
-        current_label = 1 if label[index] == expected_label else 0
+        current_pred = 1 if predictions[index] == target_class else 0
+        current_label = 1 if label[index] == target_class else 0
 
         at_least_one_condition_is_met = any(
             [condition(current_data, current_pred) for condition in conditions]
@@ -42,7 +42,7 @@ def POS_T(
     data: List[Dict],
     predictions: List[int],
     label: List[int],
-    expected_label=1,
+    target_class,
 ) -> int:
     """
     This function counts the number of samples where the conditions are met and the model's prediction are false positives
@@ -56,8 +56,8 @@ def POS_T(
     count = 0
     for index in range(len(data)):
         current_data = data[index]
-        current_pred = 1 if predictions[index] == expected_label else 0
-        current_label = 1 if label[index] == expected_label else 0
+        current_pred = 1 if predictions[index] == target_class else 0
+        current_label = 1 if label[index] == target_class else 0
 
         at_least_one_condition_is_met = any(
             [condition(current_data, current_pred) for condition in conditions]
@@ -75,7 +75,7 @@ def NEG(
     data: List[Dict],
     predictions: List[int],
     label: List[int],
-    expected_label=1,
+    target_class,
 ) -> int:
     """
     Counts the samples where the conditions are met, but the prediction was correct.
@@ -90,8 +90,8 @@ def NEG(
 
     for index in range(len(data)):
         current_data = data[index]
-        current_pred = 1 if predictions[index] == expected_label else 0
-        current_label = 1 if label[index] == expected_label else 0
+        current_pred = 1 if predictions[index] == target_class else 0
+        current_label = 1 if label[index] == target_class else 0
 
         at_least_one_condition_is_met = any(
             [condition(current_data, current_pred) for condition in conditions]
@@ -108,7 +108,7 @@ def BOD(
     data: List[Dict],
     predictions: List[int],
     label: List[int],
-    expected_label=1,
+    target_class,
 ) -> int:
     """
     Counts the number of examples in T that satisfy any of the conditions in DCy and were predicted as y in Y
@@ -123,7 +123,7 @@ def BOD(
 
     for index in range(len(data)):
         current_data = data[index]
-        current_pred = 1 if predictions[index] == expected_label else 0
+        current_pred = 1 if predictions[index] == target_class else 0
         # current_label = label[index]
 
         at_least_one_condition_is_met = any(
@@ -136,7 +136,7 @@ def BOD(
 
     return count
 
-def calculate_P(predictions: List[int], label: List[int], expected_label=1) -> float:
+def calculate_P(predictions: List[int], label: List[int], target_class) -> float:
     """
     Calculates the precision of all rows where the label is predicted as True.
     This is a value that is calculated in the EDCR paper.
@@ -145,25 +145,23 @@ def calculate_P(predictions: List[int], label: List[int], expected_label=1) -> f
     :param label: List[int]: The labels of the data.
     :param expected_label: int: The expected label.
     """
-    # predictions = [
-    #     predictions[index] for index in range(len(predictions)) if label[index] == 1
-    # ]
-    # label = [label[index] for index in range(len(label)) if label[index] == 1]
+
+    predictions = [1 if predictions[index] == target_class else 0 for index in range(len(predictions))]
+    label = [1 if label[index] == target_class else 0 for index in range(len(label))]
 
     return precision_score(label, predictions)
 
 
-def calculate_false_positives(predictions: List[int], label: List[int]) -> float:
+def calculate_false_positives(predictions: List[int], label: List[int], target_class) -> float:
     """
     Calculates the number of false positives in the data.
 
     :param predictions: List[int]: The predictions of the model.
     :param label: List[int]: The labels of the data.
     """
-    # predictions = [
-    #     predictions[index] for index in range(len(predictions)) if label[index] == 1
-    # ]
-    # label = [label[index] for index in range(len(label)) if label[index] == 1]
+
+    predictions = [1 if predictions[index] == target_class else 0 for index in range(len(predictions))]
+    label = [1 if label[index] == target_class else 0 for index in range(len(label))]
 
     count = 0
     for index in range(len(predictions)):
@@ -172,7 +170,7 @@ def calculate_false_positives(predictions: List[int], label: List[int]) -> float
     return count
 
 
-def calculate_R(predictions: List[int], label: List[int]) -> float:
+def calculate_R(predictions: List[int], label: List[int], target_class) -> float:
     """
     Calculates the recall of all rows where the label is predicted as True.
     This is a value that is calculated in the EDCR paper.
@@ -180,12 +178,16 @@ def calculate_R(predictions: List[int], label: List[int]) -> float:
     :param predictions: List[int]: The predictions of the model.
     :param label: List[int]: The labels of the data.
     """
+    predictions = [1 if predictions[index] == target_class else 0 for index in range(len(predictions))]
+    label = [1 if label[index] == target_class else 0 for index in range(len(label))]
+
     return recall_score(label, predictions)
 
 
 def DetRuleLearn(
     conditions: List[Condition],
     data,
+    target_class,
     predictions: List[int],
     labels: List[int],
     epsilon=0.1,
@@ -201,20 +203,20 @@ def DetRuleLearn(
     :param epsilon: float: The epsilon value used as a constraint while selecting rules.
     """
 
-    N = labels.count(1)
-    P = calculate_P(predictions, labels)
-    R = calculate_R(predictions, labels)
+    N = labels.count(target_class)
+    P = calculate_P(predictions, labels, target_class)
+    R = calculate_R(predictions, labels, target_class)
 
     threshold = epsilon * (N * P) / R
 
     learned_conditions = []
-    candidate_conditions = list(filter(lambda condition: NEG([condition], data, predictions, labels) < threshold, conditions))
+    candidate_conditions = list(filter(lambda condition: NEG([condition], data, predictions, labels, target_class) < threshold, conditions))
 
     while len(candidate_conditions) > 0:
-        best_condition = max( candidate_conditions, key=lambda condition: POS(learned_conditions.copy() + [condition], data, predictions, labels))
+        best_condition = max( candidate_conditions, key=lambda condition: POS(learned_conditions.copy() + [condition], data, predictions, labels, target_class))
         learned_conditions.append(best_condition)
         candidate_conditions.remove(best_condition)
-        candidate_conditions = list(filter(lambda condition: NEG(learned_conditions + [condition], data, predictions, labels) < threshold, candidate_conditions))
+        candidate_conditions = list(filter(lambda condition: NEG(learned_conditions + [condition], data, predictions, labels, target_class) < threshold, candidate_conditions))
     return learned_conditions
 
 def RatioDetRuleLearn(
@@ -276,9 +278,6 @@ def RatioDetRuleLearn(
 # EDCR Error detectors.
 # ==================================================================================================
 class EdcrErrorDetector:
-    def correct(self, data: List[Dict], pred: List[int]) -> List[int]:
-        pass
-
     def detect(self, data: List[Dict], pred: List[int]) -> List[int]:
         """
         This function detects errors in the data.
@@ -293,8 +292,9 @@ class EdcrErrorDetector:
         ]
 
 class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
-    def __init__(self, epsilon=0.1):
+    def __init__(self, target_class, epsilon=0.1, ):
         self.rules = []
+        self.target_class = target_class
         self.epsilon = epsilon
 
     def train(
@@ -314,6 +314,7 @@ class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
         conditions: List[Condition]: The conditions to use.
         """
         self.rules = DetRuleLearn(
+            target_class=self.target_class,
             conditions=conditions,
             data=data,
             predictions=pred,

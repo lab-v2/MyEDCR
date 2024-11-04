@@ -8,7 +8,7 @@ import pandas as pd
 
 data = pd.read_csv("data/train.csv")
 
-error_detector = EdcrDetRuleLearnErrorDetector(epsilon=100)    
+error_detector = EdcrDetRuleLearnErrorDetector(epsilon=100, target_class=1)    
 error_detector.train(
     data = data.to_dict("records"),
     pred = data["pred"].to_list(),

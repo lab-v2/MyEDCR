@@ -12,7 +12,7 @@ Condition([The name of the condition], [A function which returns true or false])
 ```
 For example:
 ```python
-Condition("X is equal to 1", lambda x, pred: x == 1)
+Condition("X is equal to 1", lambda x: x["x"] == 1)
 ```
 
 
@@ -43,9 +43,9 @@ Example:
 ```python
 
 conditions = [
-    Condition("A is equal 1", lambda x, pred: x["a"] == 1),
-    Condition("A is equal 5", lambda x, pred: x["a"] == 5),
-    Condition("C is equal to 28", lambda x, pred: x["c"] == 28),
+    Condition("A is equal 1", lambda x: x["a"] == 1),
+    Condition("A is equal 5", lambda x: x["a"] == 5),
+    Condition("C is equal to 28", lambda x: x["c"] == 28),
 ]
 
 detector = EdcrRatioDetRuleLearnErrorDetector()

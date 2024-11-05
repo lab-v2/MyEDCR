@@ -57,7 +57,7 @@ conditions = [
     Condition("C is equal to 28", lambda x: x["c"] == 28),
 ]
 
-detector = EdcrRatioDetRuleLearnErrorDetector()
+detector = EdcrDetRuleLearnErrorDetector(target_class=1)
 detector.train(
     data=[
         {"a": 1, "b": 2, "c": 3},

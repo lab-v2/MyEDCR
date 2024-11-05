@@ -5,6 +5,15 @@ At the moment, I only wrote the code to account for a binary classification case
 
 ## How to use EDCR
 EDCR takes in a list of predicates and returns a subset of these predicates. At the moment, I set it up in a way where predicates can be any function that takes in two parameters, the metadata and the model's prediction and then returns True or False.
+
+### Detection:
+When it comes to the use of Detection Rules, the following is mentioned in the [EDCR paper](https://arxiv.org/pdf/2308.14250).
+> The intuition is first to create error detecting rules for each class, which effectively re-assigns any sample into an “unknown” class. 
+
+### Correction:
+When it comes to the use of Correction Rules, the following is mentioned in the [EDCR paper](https://arxiv.org/pdf/2308.14250).
+
+
 ### Step 1
 In this repo, we call predicates conditions. You define a condition like this:
 ```python

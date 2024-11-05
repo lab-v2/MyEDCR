@@ -27,7 +27,7 @@ def POS(
         current_label = 1 if label[index] == target_class else 0
 
         at_least_one_condition_is_met = any(
-            [condition(current_data, current_pred) for condition in conditions]
+            [condition(current_data) for condition in conditions]
         )
         prediction_is_wrong = current_pred != current_label
 
@@ -60,7 +60,7 @@ def POS_T(
         current_label = 1 if label[index] == target_class else 0
 
         at_least_one_condition_is_met = any(
-            [condition(current_data, current_pred) for condition in conditions]
+            [condition(current_data) for condition in conditions]
         )
         is_false_positive = current_pred == 1 and current_label == 0
 
@@ -94,7 +94,7 @@ def NEG(
         current_label = 1 if label[index] == target_class else 0
 
         at_least_one_condition_is_met = any(
-            [condition(current_data, current_pred) for condition in conditions]
+            [condition(current_data) for condition in conditions]
         )
         prediction_is_correct = current_pred == current_label
 
@@ -127,7 +127,7 @@ def BOD(
         # current_label = label[index]
 
         at_least_one_condition_is_met = any(
-            [condition(current_data, current_pred) for condition in conditions]
+            [condition(current_data) for condition in conditions]
         )
         prediction_has_value_of_1 = current_pred == 1
 
@@ -278,6 +278,9 @@ def RatioDetRuleLearn(
 # EDCR Error detectors.
 # ==================================================================================================
 class EdcrErrorDetector:
+    def __init__(self, target_class):
+        self.target_class = target_class
+
     def detect(self, data: List[Dict], pred: List[int]) -> List[int]:
         """
         This function detects errors in the data.
@@ -287,14 +290,15 @@ class EdcrErrorDetector:
         pred: List[int]: The predictions of the model.
         """
         return [
-            any([condition(data[index], pred[index]) for condition in self.rules])
+            any([condition(data[index]) for condition in self.rules]) and pred[index] == self.target_class
             for index in range(len(data))
         ]
 
 class EdcrDetRuleLearnErrorDetector(EdcrErrorDetector):
-    def __init__(self, target_class, epsilon=0.1, ):
+    def __init__(self, target_class, epsilon=0.1):
+        super().__init__(target_class)
+
         self.rules = []
-        self.target_class = target_class
         self.epsilon = epsilon
 
     def train(

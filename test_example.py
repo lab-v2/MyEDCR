@@ -14,9 +14,9 @@ error_detector.train(
     pred = data["pred"].to_list(),
     labels = data["target"].to_list(),
     conditions= [
-        Condition("Feature 0 is equal 1", lambda metadata, prediction: metadata["feature_0"] == 1),
-        Condition("Feature 1 is equal 1", lambda metadata, prediction: metadata["feature_1"] == 1),
-        Condition("Feature 2 is equal 1", lambda metadata, prediction: metadata["feature_2"] == 1),
+        Condition("Feature 0 is equal 1", lambda metadata: metadata["feature_0"] == 1),
+        Condition("Feature 1 is equal 1", lambda metadata: metadata["feature_1"] == 1),
+        Condition("Feature 2 is equal 1", lambda metadata: metadata["feature_2"] == 1),
     ]
 )
 
